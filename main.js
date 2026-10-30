@@ -1,8 +1,7 @@
-import { registry, refreshRegistry, getDockIds, setDockIds, getAllApps, installExtension, uninstallExtension, isBuiltin, availableExtensions } from "./core/app-registry.js";
-import { launchApp, closeApp, subscribe, currentApp } from "./core/app-lifecycle.js";
-import { getState, patchState, exportLayout, importLayout } from "./core/storage.js";
-import { renderApp, applyWallpaper, applyTheme } from "./apps/render.js";
-
+import { registry, refreshRegistry, getDockIds, setDockIds, getAllApps, installExtension, uninstallExtension, isBuiltin, availableExtensions } from "./app-registry.js";
+import { launchApp, closeApp, subscribe, currentApp } from "./app-lifecycle.js";
+import { getState, patchState, exportLayout, importLayout } from "./storage.js";
+import { renderApp, applyWallpaper, applyTheme } from "./render.js";
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const toast = (s) => {
