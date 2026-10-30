@@ -1,7 +1,6 @@
-import { getState, patchState, exportLayout, importLayout } from "../core/storage.js";
-import { getAllApps, allBuiltinApps, availableExtensions, installExtension, uninstallExtension, refreshRegistry, isBuiltin } from "../core/app-registry.js";
-import { sendMessage } from "../services/ai-service.js";
-
+import { getState, patchState, exportLayout, importLayout } from "./storage.js";
+import { getAllApps, allBuiltinApps, availableExtensions, installExtension, uninstallExtension, refreshRegistry, isBuiltin } from "./app-registry.js";
+import { sendMessage } from "./ai-service.js";
 const $ = s => document.querySelector(s);
 function panel(html) { return `<div class="panel">${html}</div>`; }
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
