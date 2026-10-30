@@ -24,7 +24,7 @@ function getHomeOrder() {
   if (Array.isArray(saved) && saved.length) return saved;
 // 默认：所有非 Dock 内置应用
   const dock = getDockIds();
-  return getAllApps().filter(a => !dock.includes(a.id) && !a.builtin !== false).map(a => a.id);
+  return getAllApps().filter(a => !dock.includes(a.id)).map(a => a.id);
 }
 function saveHomeOrder(order) {
   patchState({ order: { ...getState().order, home: order } });
@@ -53,8 +53,8 @@ function findAppPosition(order, appId) {
 }
 // ============ 渲染 ============
 function iconHTML(item, context) {
-// context: "home" | "dock" | "folder"
-  if (typeof item === "string") {
+  // context: "home" | "dock" | "folder"
+if (typeof item === "string") {
     const app = registry.get(item);
     if (!app) return "";
     return `<button class="app-icon" data-app="${app.id}" data-context="${context}" aria-label="${app.name}">
@@ -77,9 +77,9 @@ function iconHTML(item, context) {
 }
 function renderDesktop() {
   const order = getHomeOrder();
-const dock = getDockIds();
+  const dock = getDockIds();
   const page0 = order.slice(0, HOME_PER_PAGE);
-  const page1 = order.slice(HOME_PER_PAGE);
+const page1 = order.slice(HOME_PER_PAGE);
   $("#app-grid-0").innerHTML = page0.map(item => iconHTML(item, "home")).join("");
   $("#app-grid-1").innerHTML = page1.map(item => iconHTML(item, "home")).join("");
   $("#dock").innerHTML = dock.map(id => {
@@ -102,9 +102,9 @@ function bindIcons() {
           if (!isBuiltin(appId)) {
             if (confirm(`卸载 ${registry.get(appId)?.name}？`)) {
               uninstallExtension(appId);
-// 从桌面和 Dock 移除
+              // 从桌面和 Dock 移除
               const order = getHomeOrder();
-              const newOrder = order.filter(item => {
+const newOrder = order.filter(item => {
                 if (typeof item === "string") return item !== appId;
                 if (item.type === "folder") return item.apps = item.apps.filter(x => x !== appId), item.apps.length > 0;
                 return true;
@@ -134,10 +134,10 @@ function bindIcons() {
 function openFolder(folderName) {
   const order = getHomeOrder();
   const folder = order.find(item => item.type === "folder" && item.name === folderName);
-if (!folder) return;
+  if (!folder) return;
   closeFolder();
   folderOverlay = document.createElement("div");
-  folderOverlay.className = "folder-overlay";
+folderOverlay.className = "folder-overlay";
   folderOverlay.innerHTML = `
     <div class="folder-modal">
       <div class="folder-title">${folderName}</div>
@@ -161,12 +161,12 @@ if (!folder) return;
   // 绑定文件夹内图标
   folderOverlay.querySelectorAll("[data-app]").forEach(b => {
     b.onclick = () => launchApp(b.dataset.app);
-});
+  });
 }
 function closeFolder() {
   if (folderOverlay) {
     folderOverlay.remove();
-    folderOverlay = null;
+folderOverlay = null;
   }
 }
 // ============ 拖拽系统 ============
@@ -194,10 +194,10 @@ function bindDrag() {
 function startDrag(el, e) {
   editMode = true;
   const isDock = el.dataset.context === "dock";
-const isFolder = el.hasAttribute("data-folder");
+  const isFolder = el.hasAttribute("data-folder");
   drag = {
     source: el,
-    appId: el.dataset.app || null,
+appId: el.dataset.app || null,
     folderName: el.dataset.folder || null,
     fromDock: isDock,
     isFolder: isFolder,
@@ -231,9 +231,9 @@ function checkEdgeScroll(x) {
 function endDrag() {
   if (!drag) return;
   const { appId, folderName, fromDock, isFolder } = drag;
-// 查找松手位置的目标
+  // 查找松手位置的目标
   const elBelow = document.elementFromPoint(ghostX, ghostY);
-  const targetApp = elBelow?.closest("[data-app]");
+const targetApp = elBelow?.closest("[data-app]");
   const targetFolder = elBelow?.closest("[data-folder]");
   const targetDock = elBelow?.closest("#dock");
   const order = getHomeOrder();
@@ -260,9 +260,9 @@ function endDrag() {
     toast("已移出 Dock");
   } else if (targetApp && targetApp.dataset.app !== appId && !isFolder) {
     // 拖到另一个图标上 → 合并文件夹
-const targetId = targetApp.dataset.app;
+    const targetId = targetApp.dataset.app;
     const targetContext = targetApp.dataset.context;
-    if (targetContext === "folder") {
+if (targetContext === "folder") {
       // 加入现有文件夹
       const newOrder = order.map(item => {
         if (item.type === "folder" && item.apps.includes(targetId)) {
@@ -287,9 +287,9 @@ const targetId = targetApp.dataset.app;
   } else if (targetFolder && !isFolder) {
     // 拖到文件夹上 → 加入文件夹
     const fn = targetFolder.dataset.folder;
-const newOrder = order.map(item => {
+    const newOrder = order.map(item => {
       if (item.type === "folder" && item.name === fn) {
-        return { ...item, apps: [...item.apps, appId] };
+return { ...item, apps: [...item.apps, appId] };
       }
       return item;
     });
@@ -322,14 +322,14 @@ function removeAppFromOrder(order, appId) {
     } else if (item.type === "folder") {
       const apps = item.apps.filter(x => x !== appId);
       if (apps.length > 0) result.push({ ...item, apps });
-}
+    }
   }
   return result;
 }
 // ============ 页面切换 ============
 renderDesktop();
 subscribe(e => {
-  if (e.type === "launch") {
+if (e.type === "launch") {
     const app = registry.get(e.id);
     $("#app-title").textContent = app?.name || "应用";
     $("#home").classList.add("hidden");
@@ -355,7 +355,7 @@ let startX = 0;
 $("#pages").addEventListener("touchstart", e => startX = e.touches[0].clientX, { passive: true });
 $("#pages").addEventListener("touchend", e => {
   const dx = e.changedTouches[0].clientX - startX;
-  if (Math.abs(dx) > 45 && !drag) setPage(page + (dx < 0 ? 1 : -1));
+if (Math.abs(dx) > 45 && !drag) setPage(page + (dx < 0 ? 1 : -1));
 }, { passive: true });
 $("#page-indicator").onclick = () => setPage(page ? 0 : 1);
 // ============ 时钟 / 锁屏 ============
@@ -374,7 +374,7 @@ function unlock() {
 $("#unlock-btn").onclick = unlock;
 $("#lockscreen").addEventListener("touchstart", e => window.__lockY = e.touches[0].clientY, { passive: true });
 $("#lockscreen").addEventListener("touchend", e => {
-if (window.__lockY - e.changedTouches[0].clientY > 35) unlock();
+  if (window.__lockY - e.changedTouches[0].clientY > 35) unlock();
 }, { passive: true });
 // ============ 搜索 / 菜单 ============
 $("#search-btn").onclick = () => {
