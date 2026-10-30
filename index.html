@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>LittlePhone</title>
+  <link rel="stylesheet" href="styles/system.css">
+  <link rel="stylesheet" href="styles/desktop.css">
+  <link rel="stylesheet" href="styles/apps.css">
+</head>
+<body>
+  <main id="phone" class="phone">
+    <section id="lockscreen" class="lockscreen">
+      <div class="lock-top"><span id="lock-date"></span><span>● ● ●</span></div>
+      <div class="lock-clock" id="lock-clock">09:41</div>
+      <div class="lock-hint">向上滑动解锁</div>
+      <div class="lock-bottom"><button class="round-btn" id="lock-camera" aria-label="相机">◉</button><button class="round-btn" id="unlock-btn" aria-label="解锁">↑</button></div>
+    </section>
+
+    <section id="system" class="system hidden">
+      <header class="statusbar">
+        <span id="status-time">09:41</span>
+        <span class="status-icons">● ● ▰</span>
+      </header>
+      <section id="home" class="home">
+        <div class="home-head"><div><div class="greeting">你好，欢迎回来</div><div class="sub-greeting">这是你的 LittlePhone</div></div><button id="search-btn" class="glass-btn">⌕</button></div>
+        <div id="pages" class="pages">
+          <div class="page" data-page="0">
+            <div class="widget weather-widget"><div><span class="widget-label">天气</span><strong>☀️ 24°</strong><small>晴朗 · 适合出门</small></div><span class="weather-art">☀</span></div>
+            <div class="app-grid" id="app-grid-0"></div>
+          </div>
+          <div class="page" data-page="1"><div class="page-title">更多应用</div><div class="app-grid" id="app-grid-1"></div></div>
+        </div>
+        <div class="page-indicator" id="page-indicator"><i class="active"></i><i></i></div>
+        <nav class="dock" id="dock"></nav>
+      </section>
+      <section id="app-view" class="app-view hidden">
+        <div class="app-top"><button id="back-home" class="back-btn">‹</button><strong id="app-title">应用</strong><button id="app-menu" class="more-btn">•••</button></div>
+        <div id="app-content" class="app-content"></div>
+      </section>
+      <div class="home-indicator" id="home-indicator"></div>
+    </section>
+    <div id="toast" class="toast"></div>
+  </main>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
