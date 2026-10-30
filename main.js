@@ -11,29 +11,24 @@ const toast = (s) => {
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => t.classList.remove("show"), 1600);
 };
-
 // ============ 桌面状态 ============
 let editMode = false;
 let drag = null;
 let longTimer = null;
 let edgeTimer = null;
 let folderOverlay = null;
-
 const HOME_PER_PAGE = 8; // 每页桌面图标数
-
 // 获取桌面顺序（含文件夹对象）
 function getHomeOrder() {
   const saved = getState().order?.home;
   if (Array.isArray(saved) && saved.length) return saved;
-  // 默认：所有非 Dock 内置应用
+// 默认：所有非 Dock 内置应用
   const dock = getDockIds();
   return getAllApps().filter(a => !dock.includes(a.id) && !a.builtin !== false).map(a => a.id);
 }
-
 function saveHomeOrder(order) {
   patchState({ order: { ...getState().order, home: order } });
 }
-
 // 扁平化：展开文件夹，获取所有应用ID（含文件夹内的）
 function flattenApps(order) {
   const ids = [];
@@ -43,7 +38,6 @@ function flattenApps(order) {
   });
   return ids;
 }
-
 // 在 order 中查找某个应用ID所在的路径（顶层位置 或 文件夹内位置）
 function findAppPosition(order, appId) {
   for (let i = 0; i < order.length; i++) {
@@ -57,10 +51,9 @@ function findAppPosition(order, appId) {
   }
   return null;
 }
-
 // ============ 渲染 ============
 function iconHTML(item, context) {
-  // context: "home" | "dock" | "folder"
+// context: "home" | "dock" | "folder"
   if (typeof item === "string") {
     const app = registry.get(item);
     if (!app) return "";
@@ -82,13 +75,11 @@ function iconHTML(item, context) {
   }
   return "";
 }
-
 function renderDesktop() {
   const order = getHomeOrder();
-  const dock = getDockIds();
+const dock = getDockIds();
   const page0 = order.slice(0, HOME_PER_PAGE);
   const page1 = order.slice(HOME_PER_PAGE);
-
   $("#app-grid-0").innerHTML = page0.map(item => iconHTML(item, "home")).join("");
   $("#app-grid-1").innerHTML = page1.map(item => iconHTML(item, "home")).join("");
   $("#dock").innerHTML = dock.map(id => {
@@ -97,12 +88,10 @@ function renderDesktop() {
       <span class="glyph" style="background:${app.color}">${app.icon}</span>
     </button>` : "";
   }).join("");
-
   document.body.classList.toggle("edit-mode", editMode);
   bindIcons();
   bindDrag();
 }
-
 function bindIcons() {
   $$("[data-app]").forEach(b => {
     b.onclick = (e) => {
@@ -113,7 +102,7 @@ function bindIcons() {
           if (!isBuiltin(appId)) {
             if (confirm(`卸载 ${registry.get(appId)?.name}？`)) {
               uninstallExtension(appId);
-              // 从桌面和 Dock 移除
+// 从桌面和 Dock 移除
               const order = getHomeOrder();
               const newOrder = order.filter(item => {
                 if (typeof item === "string") return item !== appId;
@@ -134,7 +123,6 @@ function bindIcons() {
       launchApp(b.dataset.app);
     };
   });
-
   $$("[data-folder]").forEach(b => {
     b.onclick = () => {
       if (editMode) return;
@@ -142,15 +130,12 @@ function bindIcons() {
     };
   });
 }
-
 // ============ 文件夹视图 ============
 function openFolder(folderName) {
   const order = getHomeOrder();
   const folder = order.find(item => item.type === "folder" && item.name === folderName);
-  if (!folder) return;
-
+if (!folder) return;
   closeFolder();
-
   folderOverlay = document.createElement("div");
   folderOverlay.className = "folder-overlay";
   folderOverlay.innerHTML = `
@@ -173,24 +158,20 @@ function openFolder(folderName) {
     if (e.target === folderOverlay) closeFolder();
   });
   document.body.appendChild(folderOverlay);
-
   // 绑定文件夹内图标
   folderOverlay.querySelectorAll("[data-app]").forEach(b => {
     b.onclick = () => launchApp(b.dataset.app);
-  });
+});
 }
-
 function closeFolder() {
   if (folderOverlay) {
     folderOverlay.remove();
     folderOverlay = null;
   }
 }
-
 // ============ 拖拽系统 ============
 function bindDrag() {
   const draggables = $$("#app-grid-0 [data-app], #app-grid-0 [data-folder], #app-grid-1 [data-app], #app-grid-1 [data-folder], #dock [data-app]");
-
   draggables.forEach(el => {
     el.addEventListener("pointerdown", (e) => {
       if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -210,11 +191,10 @@ function bindDrag() {
     el.addEventListener("pointercancel", finish);
   });
 }
-
 function startDrag(el, e) {
   editMode = true;
   const isDock = el.dataset.context === "dock";
-  const isFolder = el.hasAttribute("data-folder");
+const isFolder = el.hasAttribute("data-folder");
   drag = {
     source: el,
     appId: el.dataset.app || null,
@@ -223,26 +203,22 @@ function startDrag(el, e) {
     isFolder: isFolder,
     ghost: null
   };
-
   // 创建幽灵图标
   const ghost = el.cloneNode(true);
   ghost.classList.add("drag-ghost");
   ghost.style.pointerEvents = "none";
   document.body.appendChild(ghost);
   drag.ghost = ghost;
-
   el.classList.add("dragging-source");
   moveGhost(e.clientX, e.clientY);
   renderDesktop();
   toast("拖动图标到目标位置");
 }
-
 function moveGhost(x, y) {
   if (!drag?.ghost) return;
   drag.ghost.style.left = x + "px";
   drag.ghost.style.top = y + "px";
 }
-
 function checkEdgeScroll(x) {
   const w = window.innerWidth;
   clearTimeout(edgeTimer);
@@ -252,20 +228,16 @@ function checkEdgeScroll(x) {
     edgeTimer = setTimeout(() => setPage(page + 1), 400);
   }
 }
-
 function endDrag() {
   if (!drag) return;
   const { appId, folderName, fromDock, isFolder } = drag;
-
-  // 查找松手位置的目标
+// 查找松手位置的目标
   const elBelow = document.elementFromPoint(ghostX, ghostY);
   const targetApp = elBelow?.closest("[data-app]");
   const targetFolder = elBelow?.closest("[data-folder]");
   const targetDock = elBelow?.closest("#dock");
-
   const order = getHomeOrder();
   const dock = getDockIds();
-
   if (targetDock && !fromDock && !isFolder) {
     // 拖入 Dock
     if (!dock.includes(appId)) {
@@ -288,9 +260,8 @@ function endDrag() {
     toast("已移出 Dock");
   } else if (targetApp && targetApp.dataset.app !== appId && !isFolder) {
     // 拖到另一个图标上 → 合并文件夹
-    const targetId = targetApp.dataset.app;
+const targetId = targetApp.dataset.app;
     const targetContext = targetApp.dataset.context;
-
     if (targetContext === "folder") {
       // 加入现有文件夹
       const newOrder = order.map(item => {
@@ -316,7 +287,7 @@ function endDrag() {
   } else if (targetFolder && !isFolder) {
     // 拖到文件夹上 → 加入文件夹
     const fn = targetFolder.dataset.folder;
-    const newOrder = order.map(item => {
+const newOrder = order.map(item => {
       if (item.type === "folder" && item.name === fn) {
         return { ...item, apps: [...item.apps, appId] };
       }
@@ -331,7 +302,6 @@ function endDrag() {
       // 已在上面处理
     }
   }
-
   // 清理
   if (drag.ghost) drag.ghost.remove();
   drag = null;
@@ -339,13 +309,11 @@ function endDrag() {
   editMode = false;
   renderDesktop();
 }
-
 let ghostX = 0, ghostY = 0;
 document.addEventListener("pointermove", (e) => {
   ghostX = e.clientX;
   ghostY = e.clientY;
 }, { passive: true });
-
 function removeAppFromOrder(order, appId) {
   const result = [];
   for (const item of order) {
@@ -354,14 +322,12 @@ function removeAppFromOrder(order, appId) {
     } else if (item.type === "folder") {
       const apps = item.apps.filter(x => x !== appId);
       if (apps.length > 0) result.push({ ...item, apps });
-    }
+}
   }
   return result;
 }
-
 // ============ 页面切换 ============
 renderDesktop();
-
 subscribe(e => {
   if (e.type === "launch") {
     const app = registry.get(e.id);
@@ -375,10 +341,8 @@ subscribe(e => {
     $("#home").classList.remove("hidden");
   }
 });
-
 $("#back-home").onclick = closeApp;
 $("#home-indicator").onclick = () => { if (currentApp()) closeApp(); };
-
 let page = getState().page || 0;
 function setPage(n) {
   page = Math.max(0, Math.min(1, n));
@@ -387,7 +351,6 @@ function setPage(n) {
   patchState({ page });
 }
 $("#pages").scrollLeft = page * $("#pages").clientWidth;
-
 let startX = 0;
 $("#pages").addEventListener("touchstart", e => startX = e.touches[0].clientX, { passive: true });
 $("#pages").addEventListener("touchend", e => {
@@ -395,7 +358,6 @@ $("#pages").addEventListener("touchend", e => {
   if (Math.abs(dx) > 45 && !drag) setPage(page + (dx < 0 ? 1 : -1));
 }, { passive: true });
 $("#page-indicator").onclick = () => setPage(page ? 0 : 1);
-
 // ============ 时钟 / 锁屏 ============
 function clock() {
   const d = new Date();
@@ -405,7 +367,6 @@ function clock() {
 }
 clock();
 setInterval(clock, 15000);
-
 function unlock() {
   $("#lockscreen").classList.add("hidden");
   $("#system").classList.remove("hidden");
@@ -413,9 +374,8 @@ function unlock() {
 $("#unlock-btn").onclick = unlock;
 $("#lockscreen").addEventListener("touchstart", e => window.__lockY = e.touches[0].clientY, { passive: true });
 $("#lockscreen").addEventListener("touchend", e => {
-  if (window.__lockY - e.changedTouches[0].clientY > 35) unlock();
+if (window.__lockY - e.changedTouches[0].clientY > 35) unlock();
 }, { passive: true });
-
 // ============ 搜索 / 菜单 ============
 $("#search-btn").onclick = () => {
   const q = prompt("搜索应用名称");
@@ -424,7 +384,6 @@ $("#search-btn").onclick = () => {
   if (a) launchApp(a.id);
   else toast("没有找到应用");
 };
-
 $("#app-menu").onclick = () => {
   const action = prompt("LittlePhone 0.7.0\n输入 1 导出布局，2 导入布局");
   if (action === "1") {
@@ -454,16 +413,13 @@ $("#app-menu").onclick = () => {
     input.click();
   }
 };
-
 applyWallpaper();
 applyTheme();
-
 // 应用安装/卸载后重新渲染桌面
 window.addEventListener("apps-changed", () => {
   refreshRegistry();
   renderDesktop();
 });
-
 // 布局导入后重新渲染桌面
 window.addEventListener("layout-imported", () => {
   refreshRegistry();
